@@ -106,14 +106,14 @@ app.get('/video', (req, res) => {
     return res.status(400).send('Falta parámetro ?url=');
   }
 
-  // Forzar descarga en el cliente
+  // Establece encabezado para descarga
   res.setHeader('Content-Type', 'application/octet-stream');
   res.setHeader('Content-Disposition', 'attachment; filename="video.mp4"');
 
-  // Ejecutar yt-dlp con salida al stdout (pipe)
-  const ytdlp = spawn('yt-dlp', ['-f', 'best', '-o', '-', videoUrl]);
+  // Ejecutar yt-dlp SIN -f para dejar que seleccione lo mejor
+  const ytdlp = spawn('yt-dlp', ['-o', '-', videoUrl]);
 
-  // Pipe directo del stdout de yt-dlp al response (cliente)
+  // Redirigir el video directamente al cliente
   ytdlp.stdout.pipe(res);
 
   ytdlp.stderr.on('data', data => {
@@ -122,14 +122,13 @@ app.get('/video', (req, res) => {
 
   ytdlp.on('error', err => {
     console.error('Error ejecutando yt-dlp:', err);
-    if (!res.headersSent) res.status(500).send('Error descargando video');
+    if (!res.headersSent) res.status(500).send('Error al ejecutar yt-dlp');
   });
 
   ytdlp.on('close', code => {
     if (code !== 0) {
       console.error(`yt-dlp terminó con código ${code}`);
-      // Terminar la respuesta si no está terminada
-      if (!res.finished) res.end();
+      if (!res.writableEnded) res.end();
     }
   });
 });
