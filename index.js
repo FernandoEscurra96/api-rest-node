@@ -100,7 +100,7 @@ app.get('/video', (req, res) => {
   res.sendFile(videoPath);
 });*/
 
-app.get('/video', (req, res) => {
+/*app.get('/video', (req, res) => {
   const videoUrl = req.query.url;
   if (!videoUrl) {
     return res.status(400).send('Falta parámetro ?url=');
@@ -131,7 +131,7 @@ app.get('/video', (req, res) => {
       if (!res.writableEnded) res.end();
     }
   });
-});
+});*/
 
 import notFound from "./src/middlewares/not-found.js";
 app.use(notFound)
